@@ -1,26 +1,44 @@
 import unittest
 import os
+import subprocess
+import shutil
 from git_file_info import *
 
 class TestGitFileInfo(unittest.TestCase):
 
-    def setUp(self):
-      self.dir       = os.path.join("tmp", "testing")
-      self.test_file = os.path.join(self.dir, "foo.txt")
-      os.makedirs(self.dir)
-      open(self.test_file, 'w').close()
+  @classmethod
+  def setUpClass(cls):
+    remote_repo = os.path.join("/", "tmp", "fake_remote_repo")
+    os.makedirs(remote_repo)
+    os.chdir(remote_repo)
+    subprocess.call(["git", "init"])
+    git_folders = os.path.join(remote_repo, "doc", "testing")
+    os.makedirs(git_folders)
+    git_file = os.path.join(git_folders, "README.txt")
+    open(git_file, 'w').close()
+    subprocess.call(["git", "add", "."])
+    subprocess.call(["git", "commit", "-m", "initial commit"])
+    os.chdir("/tmp")
+    subprocess.call(["git", "clone", remote_repo, "fake_local_copy"])
+    os.mkdir("/tmp/not_git_repo")
 
-    def test_path(self):
-      file_info = GitFileInfo(os.path.realpath(self.test_file))
-      self.assertEqual(self.test_file, file_info.path())
+  def test_remote_repository(self):
+    file_info = GitFileInfo("/tmp/fake_local_copy/doc/testing/README.txt")
+    self.assertEqual("/tmp/fake_remote_repo", file_info.remote_repository())
 
-    def test_remote_repository(self):
-      file_info = GitFileInfo(os.path.realpath(self.test_file))
-      self.assertEqual("git@github.com:noahd1/SublimeCodeClimate.git", file_info.remote_repository())
+  def test_remote_repository_raises_error(self):
+    file_info = GitFileInfo("/tmp/not_git_repo")
+    self.assertRaises(GitInfoError, file_info.remote_repository)
 
-    def tearDown(self):
-      os.remove(self.test_file)
-      os.removedirs(self.dir)
+  def test_path(self):
+    file_info = GitFileInfo("/tmp/fake_local_copy/doc/testing/README.txt")
+    self.assertEqual("doc/testing/README.txt", file_info.path())
+
+  @classmethod
+  def tearDownClass(cls):
+    shutil.rmtree("/tmp/fake_remote_repo")
+    shutil.rmtree("/tmp/fake_local_copy")
+    shutil.rmtree("/tmp/not_git_repo")
 
 if __name__ == '__main__':
     unittest.main()

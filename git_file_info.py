@@ -13,6 +13,8 @@ class GitFileInfo:
     os.chdir(folder_name)
     popen = subprocess.Popen(git_command, stdout = subprocess.PIPE)
     repo = popen.communicate()[0].strip()
+    if repo == "":
+      raise GitInfoError(self.full_file_path + " does not appear to be part of a git repo")
     os.chdir(original_cwd)
     return repo
 
@@ -27,3 +29,7 @@ class GitFileInfo:
 
   def is_git_root(self, dir):
     return os.path.exists(os.path.join(dir, ".git"))
+
+class GitInfoError(Exception):
+  pass
+
