@@ -2,9 +2,7 @@ import unittest
 import os
 import subprocess
 import shutil
-import code_climate_utils
-
-utils = code_climate_utils
+import git_utils
 
 class TestGitFileInfo(unittest.TestCase):
 
@@ -25,27 +23,27 @@ class TestGitFileInfo(unittest.TestCase):
     os.mkdir("/tmp/not_git_repo")
 
   def test_remote_repository(self):
-    file_info = utils.GitFileInfo("/tmp/fake_local_copy/doc/testing/README.txt")
+    file_info = git_utils.GitFileInfo("/tmp/fake_local_copy/doc/testing/README.txt")
     self.assertEqual("/tmp/fake_remote_repo", file_info.remote_repository())
 
   def test_remote_repository_raises_error(self):
-    file_info = utils.GitFileInfo("/tmp/not_git_repo")
-    self.assertRaises(utils.GitInfoError, file_info.remote_repository)
+    file_info = git_utils.GitFileInfo("/tmp/not_git_repo")
+    self.assertRaises(git_utils.GitInfoError, file_info.remote_repository)
 
   def test_path(self):
-    file_info = utils.GitFileInfo("/tmp/fake_local_copy/doc/testing/README.txt")
+    file_info = git_utils.GitFileInfo("/tmp/fake_local_copy/doc/testing/README.txt")
     self.assertEqual("doc/testing/README.txt", file_info.path())
 
   def test_not_path(self):
-    file_info = utils.GitFileInfo("/tmp/not_git_repo")
-    self.assertRaises(utils.GitInfoError, file_info.path)
+    file_info = git_utils.GitFileInfo("/tmp/not_git_repo")
+    self.assertRaises(git_utils.GitInfoError, file_info.path)
 
   def test_git_root(self):
-    file_info = utils.GitFileInfo("/tmp/")
+    file_info = git_utils.GitFileInfo("/tmp/")
     self.assertEqual("/tmp/fake_local_copy", file_info._git_root("/tmp/fake_local_copy/doc/testing/README.txt"))
 
   def test_git_root_none(self):
-    file_info = utils.GitFileInfo("/tmp")
+    file_info = git_utils.GitFileInfo("/tmp")
     self.assertEqual(None, file_info._git_root("/tmp/not_git_repo"))
 
   @classmethod
