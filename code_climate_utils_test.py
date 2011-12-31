@@ -36,6 +36,18 @@ class TestGitFileInfo(unittest.TestCase):
     file_info = utils.GitFileInfo("/tmp/fake_local_copy/doc/testing/README.txt")
     self.assertEqual("doc/testing/README.txt", file_info.path())
 
+  def test_not_path(self):
+    file_info = utils.GitFileInfo("/tmp/not_git_repo")
+    self.assertRaises(utils.GitInfoError, file_info.path)
+
+  def test_git_root(self):
+    file_info = utils.GitFileInfo("/tmp/")
+    self.assertEqual("/tmp/fake_local_copy", file_info._git_root("/tmp/fake_local_copy/doc/testing/README.txt"))
+
+  def test_git_root_none(self):
+    file_info = utils.GitFileInfo("/tmp")
+    self.assertEqual(None, file_info._git_root("/tmp/not_git_repo"))
+
   @classmethod
   def tearDownClass(cls):
     shutil.rmtree("/tmp/fake_remote_repo")
