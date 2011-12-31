@@ -18,26 +18,23 @@ class GitFileInfo:
     os.chdir(original_cwd)
     return repo
 
-  def _git_root(self, path):
-    if os.path.isfile(path):
-      test_dir = os.path.split(path)[0]
-    else:
-      test_dir = path
-
-    if os.path.exists(os.path.join(test_dir, ".git")):
-      return test_dir
-    elif os.path.split(path)[1] == '': # reached file system root
-      return None
-    else:
-      parent = os.path.split(path)[0]
-      return self._git_root(parent)
-
   def path(self):
-    git_root = self._git_root(self.full_file_path)
-    if git_root == None:
+    if self.git_root() == None:
       raise GitInfoError(self.full_file_path + " does not appear to be part of a git repo")
     else:
-      return self.full_file_path[len(git_root) + 1:]
+      return self.full_file_path[len(self.git_root()) + 1:]
+
+  def git_root(self):
+    return self._git_root(os.path.split(self.full_file_path)[0])
+
+  def _git_root(self, path):
+    head, tail = os.path.split(path)
+    if os.path.exists(os.path.join(path, ".git")):
+      return path
+    elif tail == '': # reached file system root
+      return None
+    else:
+      return self._git_root(head)
 
 class GitInfoError(Exception):
   pass
